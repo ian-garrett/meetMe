@@ -445,7 +445,6 @@ def sortEvents(eventList):
     startTimes = []
     sortedTimes = []
     for event in eventList: # loop through events and add all start times to startTimes
-        print (event)
         startTimes.append(event['start'])
     startTimes.sort() # sort by start time
     for times in startTimes: # loop through start times and create events to append to sortedTimes
