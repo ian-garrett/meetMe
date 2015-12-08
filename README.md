@@ -16,7 +16,7 @@ free times between all users.
 Once all users have submitted their free times, the meeting proposer can insert their key, which will display all mutual free times.
 It is then up to the proposer to contact and share these times with other users and decide on a meeting time. 
 
-<b>NOTE</b> This repo includes a test suite, called test.py. To user, install nosetests (pip install nosetests), then run "nosetests tests.py (I know that all it should take is "nosetests" but I could not get this working so please include the file name)
+<b>NOTE</b> This repo includes a test suite, called test.py. To run the 10 included test, install nosetests (pip install nosetests), then run "nosetests tests.py (I know that all it should take is "nosetests" but I could not get this working so please include the file name)
 
 # Future Work/Potential improvements
 1. <b>Add error-handling for when users enter incorrect URL or key</b> (This should best done ASAP! Currently too busy with finals)
