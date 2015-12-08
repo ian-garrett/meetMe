@@ -64,42 +64,56 @@ APPLICATION_NAME = 'MeetMe'
 @app.route("/")
 @app.route("/index")
 def index():
-  app.logger.debug("Entering index")
+  app.logger.debug("entering index")
   if 'begin_date' not in flask.session:
     init_session_values()
   return render_template('index.html')
 
 @app.route("/planner")
 def planner():
-    print("in planner")
-    app.logger.debug("Entering planner")
+    '''
+    route function for users responding with URL
+    '''
+    app.logger.debug("entering planner")
     meetID = request.args.get('id')
     flask.session['finalMeet'] = meetID
     return render_template('index.html')
 
 @app.route('/finalize', methods=['POST'])
 def finalize():
+    '''
+    process user submitting key
+    '''
+    app.logger.debug("entering finalize")
     key = request.form.get("final")
-    print (key)
-    print("mergedate")
     dateRange = mergeDateRanges(key)
-    print("mergeevents")
+    flask.session['finalProposal'] = 'true'
+
+    if dateRange == False: #if no overlap in date ranges
+        flask.flash("No overlap in date ranges")
+        return flask.redirect(flask.url_for("index"))
+
     busyTimes = mergeBusyTimes(key)
-    # print("finish helpers")
-    # print(type(dateRange['start']))
-    # print(type(dateRange['end']))
-    print("BEGIN")
-    start = dateRange['startDate']
-    print(start)
-    end = dateRange['endDate']
-    print(end)
-    print("END")
-    generateFreeTimes(busyTimes, start, end)
+    final = generateFreeTimes(busyTimes, dateRange['startDate'], dateRange['endDate'])
+    test = displayTimes(final)
 
     return flask.redirect(flask.url_for("index"))
 
+@app.route('/deleteProposal', methods=['POST'])
+def deleteProposal():
+    '''
+    delete everything in database associated with current key
+    '''
+    app.logger.debug("entering deleteProposal")
+    flask.session.pop('finalProposal', None)
+    collection.remove({ 'id':flask.session['key'] })
+    return flask.redirect(flask.url_for("index"))
+
 def mergeDateRanges(key):
-    # loop through objects in mongo db
+    '''
+    loop through all dateRange objects and returns the overlap
+    '''
+    app.logger.debug("entering mergeDateRanges")
     starts = []
     ends = []
     for record in collection.find( { "type": "date_range" } ):
@@ -114,7 +128,7 @@ def mergeDateRanges(key):
     ends.sort()
     # assemble date rate
     start = starts[-1]
-    end = ends[0] #add 24 h
+    end = ends[0]
     end = arrow.get(end).isoformat()
     if start <= end:
         modifiedDateRange = {'startDate':start,'endDate':end}
@@ -123,22 +137,24 @@ def mergeDateRanges(key):
         return False
 
 def mergeBusyTimes(key):
-    # loop through objects in mongo db
+    '''
+    loop through all busyTimes objects and returns all of them in one list
+    '''
+    app.logger.debug("entering mergeBusyTimes")
     records = [ ]
-    print("here1")
     for record in collection.find( { "type": "busyTimes" } ):
-        #print(record)
         if record['id'] == key:
             start = arrow.get(record['start'])
             end = arrow.get(record['end'])
-            blah = {'start':start, 'end':end}
-            records.append(blah)
-    print (records)
+            entry = {'start':start, 'end':end}
+            records.append(entry)
     return records
 
 @app.route("/choose")
 def choose():
-    # Authorize list
+    '''
+    authorize list
+    '''
     app.logger.debug("Checking credentials for Gooasgle calendar access")
     credentials = valid_credentials()
     if not credentials:
@@ -278,9 +294,7 @@ def setrange():
     key = str(random.randint(1000000000000, 9999999999999))
     flask.session['key'] = key
     try:
-        #print("in try")
         key = flask.session['finalMeet']
-        #print("KEY:",flask.session['finalMeet'])
         flask.session['key'] = key
 
     except:
@@ -301,6 +315,9 @@ def setrange():
 
 @app.route('/select_calendars', methods=['POST'])
 def getCalendars():
+    '''
+    loading calendars from users Google account
+    '''
     app.logger.debug("Get selected caldendars")
     selectedCalendars = request.form.getlist('calendar')
     allCalendars = []
@@ -328,26 +345,11 @@ def getCalendars():
         flask.flash("Thanks for submitting. Please let the proposer know that you have submitted your times and wait for them to get back to you!")
     except:
         meetID = flask.session['key']
-        instruct1 = "Thank you for entering you're schedule! Send the URL to the person(s) you want to meet with."
-        instruct2 = "Once the person(s) you sent the link have entered their free times, you can use the key to view potential meeting times." 
-        label1 = "The URL you are to send is below"
-        url = "http://ix.cs.uoregon.edu:6048/planner?id="+meetID
-        label2 = "The key you are enter into the box below upon recieving confirmation from those you have sent the URL to is below"
-        flask.flash(instruct1)
-        flask.flash(instruct2)
-        flask.flash(label1)
+        url = "URL: http://ix.cs.uoregon.edu:6048/planner?id="+meetID
+        key = "KEY: "+meetID
         flask.flash(url)
-        flask.flash(label2)
-        flask.flash(meetID)
+        flask.flash(key)
 
-
-
-    # startDate = arrow.get(flask.session['begin_date'])
-    # endDate = arrow.get(flask.session['end_date'])
-    # print(startDate,type(startDate))
-    # print(endDate,type(endDate))
-
-    # generateFreeTimes(allLists, startDate, endDate)
     return flask.redirect(flask.url_for("index"))
 
 ####
@@ -420,8 +422,9 @@ def next_day(isotext):
 
 
 def calendarEventsList(calendarList):
-    # gets events from selected calendars
-    app.logger.debug("ENTERING CALENDAREVENTSLISTS")
+    '''
+    gets events from selected calendars
+    '''
     busyTimes = []
     beginDate = flask.session['begin_date']
     endDate = flask.session['end_date']
@@ -437,14 +440,16 @@ def calendarEventsList(calendarList):
         resultTimes = result['calendars'][ID]['busy']
         busyTimes.append(resultTimes)
 
-    app.logger.debug("EXIT CALENDAREVENTSLISTS")
     return busyTimes
 
 def sortEvents(eventList):
-    # sort list by start time and return sorted list
+    '''
+    sort list by start time and return sorted list
+    '''
     startTimes = []
     sortedTimes = []
     for event in eventList: # loop through events and add all start times to startTimes
+        print (event)
         startTimes.append(event['start'])
     startTimes.sort() # sort by start time
     for times in startTimes: # loop through start times and create events to append to sortedTimes
@@ -454,7 +459,9 @@ def sortEvents(eventList):
     return sortedTimes
 
 def addNights(eventList, startDate, endDate):
-    # add busy events every day from 7am-9pm
+    '''
+    add busy events every day from 7am-9pm
+    '''
     startDate = arrow.get(startDate)
     endDate = arrow.get(endDate)
     for day in arrow.Arrow.span_range('day', startDate, endDate): # loop through days in range
@@ -465,26 +472,36 @@ def addNights(eventList, startDate, endDate):
     return eventList
 
 def generateFreeTimes(allLists, startDate, endDate):
-    # bring the whole shabang together
-
+    '''
+    bring the whole shabang together
+    '''
+    print("start generate")
     allLists = addNights(allLists, startDate, endDate) #add all times between 9pm-7am as a busy event
+    print("addnights ok")
     sortedEvents = sortEvents(allLists) #sort the events
+    print("sortevents ok")
     freeTimes = fetchFreeTimes(sortedEvents) #fetch the list of free times
+    print("freeTimes ok")
 
-    displayTimes(freeTimes)
+    return freeTimes
 
 def displayTimes(freeTimes):
-    # format time-ranges in a easy-to-read, easy-to-analyze format
+    '''
+    format time-ranges in a easy-to-read, easy-to-analyze format
+    '''
     for times in freeTimes:
         message = []
         message.append("From ")
-        message.append(times['start'].format('MM/DD/YYYY h:mm A'))
+        message.append(times[0].format('MM/DD/YYYY h:mm A'))
         message.append(" until ")
-        message.append(times['end'].format('MM/DD/YYYY h:mm A'))
+        message.append(times[1].format('MM/DD/YYYY h:mm A'))
         message = ''.join(message)
         flask.flash(message)
 
 def fetchFreeTimes(sortedList):
+    '''
+    create free times by assembling events around busy times
+    '''
     correctedSortedList = duplicateRemover(sortedList) # call to remove duplicates
 
     freeTimes = []
@@ -493,11 +510,13 @@ def fetchFreeTimes(sortedList):
         event = correctedSortedList[i]
         nextEvent = correctedSortedList[i+1]
         if nextEvent['start'] > event['end']: # if the start of the next event occurs after the end of the current event
-            freeTimes.append({'start':event['end'], 'end':nextEvent['start']}) # append the time between to free times
+            freeTimes.append([event['end'], nextEvent['start']]) # append the time between to free times
     return freeTimes
 
 def duplicateRemover(eventList): 
-    #corrects overlaps in busy times
+    '''
+    corrects overlaps in busy times
+    '''
     correctedList = []
     for i in range(len(eventList)-1):
         event = eventList[i]
@@ -506,7 +525,7 @@ def duplicateRemover(eventList):
         if (event['end'] > nextEvent['end'] and nextEvent['start'] < event['end']):
             correctedList.append({'start':event['start'], 'end':event['end']})
             eventList[i+1]['end'] = event['end'] # correctly iterates
-        elif (event['end'] > nextEvent['start']):
+        elif (event['end'] >= nextEvent['start']):
             correctedList.append({'start':event['start'], 'end':nextEvent['start']})
         else:
             correctedList.append({'start':event['start'], 'end':event['end']})

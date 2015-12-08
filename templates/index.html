@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html lang="en"> <head>
-<title>Appointments</title>
+<title>MeetMe</title>
 <link rel="shortcut icon" href="https://cdn4.iconfinder.com/data/icons/small-n-flat/24/calendar-128.png" type="image/png">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -24,10 +24,15 @@
 
 
 
-
+<!-- Select title depending on whether the user is the proposer or responder -->
 <div class="container">
-<center><h2><i>GOOGLE CALENDER</i></h2></center>
+{% if not session.finalMeet is defined %}
+<center><h2><i>GOOGLE CALENDAR</i></h2></center>
 <center><h2><i>APPOINTMENT SCHEDULER</i></h2></center>
+{% else %}
+<center><h2><i>RESPOND TO MEETING PROPOSAL</i></h2></center>
+{% endif %}
+
 
 <div class="row">
     <h3>Select Date Range</h3>
@@ -83,12 +88,25 @@
 {% endif %}
 </form>
 
+<!-- If nothing has been submitted, hide messages from user -->
 {% if not session.finalMeeting is defined %}
 <div class="row">
 {% with messages = get_flashed_messages() %}
 
   {% if messages %}
-  <h3>Free Times</h3>
+  <!-- decide label based on where program is at -->
+  {% if session.finalProposal is defined %}
+  <h2>Free Times</h2>
+  {% else %}
+  <h2>Instructions</h2>
+ <!--  add instructions if appropriate -->
+ {% if not session.finalMeet is defined %}
+  <i>Please send the URL to all other potential users.</i>
+  <i>Once all users have submitted their calendars,</i>
+  <i>use the key to access mutual free times</i>
+  {% endif %}
+  {% endif %}
+
     <ul class=flashes>
     {% for message in messages %}
       <li>
@@ -101,6 +119,20 @@
 </div>
 <br>
 
+<!-- When user has gottten list of times, display delete button -->
+{% if session.finalProposal is defined %}
+<div style="border: solid lightgreen 5px;text-align: center;">
+ <h5><i><b>Communicate with the other users to decide on which of the above times to meet during OR delete this proposal</b></i></h5>
+</div>
+<br>
+    <form action="/deleteProposal" method="post">
+        <div class="row">
+            <button class="btn btn-danger" type="submit">Delete Proposal</button>
+        </div>
+    </form>
+{% endif %}
+
+<!-- If user is not the proposer, do not show submission box for key -->
 {% if not session.finalMeet is defined %}
 <div class="row" id="scheduleBox">
   <form action = "/finalize" method="post">
