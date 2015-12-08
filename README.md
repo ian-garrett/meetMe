@@ -19,6 +19,7 @@ It is then up to the proposer to contact and share these times with other users 
 
 # Future Work/Potential improvements
 1. <b>Add error-handling for when users enter incorrect URL or key</b> (This should best done ASAP! Currently too busy with finals)
+2. Improve general functionality of interface, go deeper with Bootstrap to create a more modern, sleek feel
 2. Add email functionality to automatically notify users of invitations and updates to the free times
 3. Add a way for users to vote on times and display what the most popular meeting times are
 4. Add a button for the proposer to confirm a meeting time, which will send an email to all users letting them know of the time and date
