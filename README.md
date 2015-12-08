@@ -1,8 +1,7 @@
 # MeetMe
 
 The MeetMe app allows a user to schedule a meeting with other users by finding common free times by pulling data from Google Calendars.
-This application allows you to schedule a meeting with a group of people
-App can be found on http://ix.cs.uoregon.edu:6048
+MeetMe is live at http://ix.cs.uoregon.edu:6048
 
 # How it Works
 
