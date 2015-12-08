@@ -2,7 +2,7 @@
 
 The MeetMe app allows a user to schedule a meeting with other users by finding common free times by pulling data from Google Calendars.
 This application allows you to schedule a meeting with a group of people
-App can be found on http://ix.cs.uoregon.edu:6048 (Not currently running, contact me and I will launch it for use)
+App can be found on http://ix.cs.uoregon.edu:6048
 
 # How it Works
 
@@ -14,6 +14,17 @@ a date range and calendar(s). These free times are combined and compared with th
 free times between all users.
 
 Once all users have submitted their free times, the meeting proposer can insert their key, which will display all mutual free times.
-It is then up to the proposer to contact and share these times with other users and agree on a meeting time. 
+It is then up to the proposer to contact and share these times with other users and decide on a meeting time. 
 
-<b>NOTE</b>Remove function and test suites in progress.
+<b>NOTE</b> This repo includes a test suite, called test.py. To user, install nosetests (pip install nosetests), then run "nosetests tests.py (I know that all it should take is "nosetests" but I could not get this working so please include the file name)
+
+# Future Work/Potential improvements
+-<b>Add error-handling for when users enter incorrect URL or key</b> (This should best done ASAP! Currently too busy with finals)
+-Add email functionality to automatically notify users of invitations and updates to the free times
+-Add a way for users to vote on times and display what the most popular meeting times are
+-Add a button for the proposer to confirm a meeting time, which will send an email to all users letting them know of the time and date
+-Improve interface to be more intuitive on mobile devices
+-Algorithm for getting free times from busy times currently runs in O(n), could potentially look into a new, more efficient method
+
+Please contact me with any other suggestions! igarrett@uoregon.edu
+
