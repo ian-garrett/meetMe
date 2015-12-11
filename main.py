@@ -86,6 +86,26 @@ def finalize():
     '''
     app.logger.debug("entering finalize")
     key = request.form.get("final")
+
+    # I tried to make this whole thing a function
+    # make sure that key is in the range specified by key creation
+    if not (9999999999999 > int(key) > 1000000000000):
+        flask.flash("You entered an invalid key!")
+        return flask.redirect(flask.url_for("index"))
+
+    #go through keys in date objects to see if any match key entered (I chose date objects because it won't have to iterate through as many as if chose busy times
+    try:
+        keyCount = 0
+        for record in collection.find({"type":"dateRange"}):
+            if (record["id"] == key):
+                keyCount+=1
+        if keyCount == 0:
+            flask.flash("You entered a key that is not associated with any meeting ID's")
+            return flask.redirect(flask.url_for("index"))
+    except:
+        flask.flash("You entered a key that is not associated with any meeting ID's")
+        return flask.redirect(flask.url_for("index"))
+
     dateRange = mergeDateRanges(key)
     flask.session['finalProposal'] = 'true'
 
@@ -93,6 +113,8 @@ def finalize():
         flask.flash("No overlap in date ranges")
         return flask.redirect(flask.url_for("index"))
 
+
+    # merge dates, merge busy times, display results
     busyTimes = mergeBusyTimes(key)
     final = generateFreeTimes(busyTimes, dateRange['startDate'], dateRange['endDate'])
     test = displayTimes(final)
@@ -116,7 +138,7 @@ def mergeDateRanges(key):
     app.logger.debug("entering mergeDateRanges")
     starts = []
     ends = []
-    for record in collection.find( { "type": "date_range" } ):
+    for record in collection.find( { "type": "dateRange" } ):
         if record['id'] == key:
             start = record['startDate']
             end = record['endDate']
@@ -238,7 +260,6 @@ def oauth2callback():
   step, the second time we'll skip the first step and do the second,
   and so on.
   """
-  print("no break")
   app.logger.debug("Entering oauth2callback")
   flow =  client.flow_from_clientsecrets(
       CLIENT_SECRET_FILE,
@@ -300,7 +321,7 @@ def setrange():
     except:
         print ("still first user")
 
-    record = {"type": "date_range",
+    record = {"type": "dateRange",
                     "id": key,
                     "startDate":flask.session['begin_date'],
                     "endDate":flask.session['end_date']
@@ -449,7 +470,6 @@ def sortEvents(eventList):
     startTimes = []
     sortedTimes = []
     for event in eventList: # loop through events and add all start times to startTimes
-        print (event)
         startTimes.append(event['start'])
     startTimes.sort() # sort by start time
     for times in startTimes: # loop through start times and create events to append to sortedTimes
@@ -475,13 +495,9 @@ def generateFreeTimes(allLists, startDate, endDate):
     '''
     bring the whole shabang together
     '''
-    print("start generate")
     allLists = addNights(allLists, startDate, endDate) #add all times between 9pm-7am as a busy event
-    print("addnights ok")
     sortedEvents = sortEvents(allLists) #sort the events
-    print("sortevents ok")
     freeTimes = fetchFreeTimes(sortedEvents) #fetch the list of free times
-    print("freeTimes ok")
 
     return freeTimes
 
