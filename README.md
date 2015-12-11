@@ -20,13 +20,12 @@ It is then up to the proposer to contact and share these times with other users 
 <b>NOTE</b> This repo includes a test suite, called test.py. To run the 10 included test, install nosetests (pip install nosetests), then run "nosetests tests.py (I know that all it should take is "nosetests" but I could not get this working so please include the file name)
 
 # Future Work/Potential improvements
-1. <b>Add error-handling for when users enter incorrect URL or key</b> (This should best done ASAP! Currently too busy with finals)
-2. Improve general functionality of interface, go deeper with Bootstrap to create a more modern, sleek feel
-3. Add email functionality to automatically notify users of invitations and updates to the free times
-4. Add a way for users to vote on times and display what the most popular meeting times are
-5. Add a button for the proposer to confirm a meeting time, which will send an email to all users letting them know of the time and date
-6. Improve interface to be more intuitive on mobile devices
-7. Algorithm for getting free times from busy times currently runs in O(n), could potentially look into a new, more efficient method
+1. Improve general functionality of interface, go deeper with Bootstrap to create a more modern, sleek feel
+2. Add email functionality to automatically notify users of invitations and updates to the free times
+3. Add a way for users to vote on times and display what the most popular meeting times are
+4. Add a button for the proposer to confirm a meeting time, which will send an email to all users letting them know of the time and date
+5. Improve interface to be more intuitive on mobile devices
+6. Algorithm for getting free times from busy times currently runs in O(n), could potentially look into a new, more efficient method
 
 Please contact me with any other suggestions or questions you have regarding this project! igarrett@uoregon.edu
 
